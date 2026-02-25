@@ -42,7 +42,7 @@ fun UHFMenuScreen(
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BrutalistColors.BrightYellow,
+                    containerColor = Color.Transparent,
                     titleContentColor = BrutalistColors.Black
                 )
             )

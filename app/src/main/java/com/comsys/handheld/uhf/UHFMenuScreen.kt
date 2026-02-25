@@ -66,7 +66,7 @@ fun UHFMenuScreen(
 
             // RFID Scanning Button
             BrutalistMenuButton(
-                icon = Icons.Filled.Star,
+                icon = Icons.Filled.Sensors,
                 title = "RFID",
                 subtitle = "ESCANEO DE ETIQUETAS UHF",
                 onClick = onRFIDScanClick

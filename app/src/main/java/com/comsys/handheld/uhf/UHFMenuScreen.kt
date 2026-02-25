@@ -37,8 +37,8 @@ fun UHFMenuScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "UHF READER",
-                        style = BrutalistTypography.Header
+                        text = "UFH READER",
+                        style = BrutalistTypography.Header,
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

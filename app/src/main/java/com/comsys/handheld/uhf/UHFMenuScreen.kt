@@ -58,7 +58,7 @@ fun UHFMenuScreen(
         ) {
             // Access Control Button
             BrutalistMenuButton(
-                icon = Icons.Filled.Person,
+                icon = Icons.Outlined.DoorSliding,
                 title = "ACCESOS",
                 subtitle = "REGISTROS DE ENTRADA Y SALIDA",
                 onClick = onAccessControlClick

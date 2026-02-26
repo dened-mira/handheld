@@ -54,5 +54,17 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation(libs.androidx.compose.material.icons.extended)
+    dependencies {
+        // Ktor client
+        implementation(libs.ktor.client.android)
+        implementation(libs.ktor.client.auth)
+        implementation(libs.ktor.client.logging)
+
+        // For XML
+        implementation(libs.ktor.serialization.kotlinx.xml)
+    }
+
+
     implementation(files("libs/DeviceAPI_ver20250209_release.aar"))
 }

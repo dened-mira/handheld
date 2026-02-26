@@ -13,46 +13,37 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.comsys.handheld.ui.components.BrutalistLabeledTextBox
 import com.comsys.handheld.ui.theme.BrutalistColors
 import com.comsys.handheld.ui.theme.BrutalistTypography
 import com.comsys.handheld.ui.theme.brutalistBorder
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UHFScreen(
+    tags: List<UHFManager.TagInfo>,
+    status: String,
+    isConnected: Boolean,
+    isScanning: Boolean,
     onBackClick: () -> Unit,
+    onConnectClick: () -> Unit,
+    onScanClick: (isScanning: Boolean) -> Unit,
+    onClearClick: () -> Unit,
+    onOpenDoorClick: () -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val uhfManager = remember { UHFManager.getInstance() }
-    val scope = rememberCoroutineScope()
-
-    val tags by uhfManager.tags.collectAsState()
-    val status by uhfManager.status.collectAsState()
-    val isConnected by uhfManager.isConnected.collectAsState()
-
-    var isScanning by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var selectedTag by remember { mutableStateOf<UHFManager.TagInfo?>(null) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    // Auto-stop scanning when the first tag is detected
-    LaunchedEffect(tags.size) {
-        if (isScanning && tags.size == 1) {
-            // First tag detected, stop scanning
-            isScanning = false
-            uhfManager.stopInventory()
-        }
-    }
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -71,9 +62,9 @@ fun UHFScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BrutalistColors.BrightYellow,
+                    containerColor = Color.Transparent,
                     titleContentColor = BrutalistColors.Black
-                )
+                ),
             )
         }
     ) { paddingValues ->
@@ -117,23 +108,7 @@ fun UHFScreen(
                         modifier = Modifier
                             .background(BrutalistColors.Black)
                             .brutalistBorder()
-                            .clickable {
-                                scope.launch {
-                                    if (isConnected) {
-                                        // Disconnect
-                                        val result = uhfManager.disconnect()
-                                        result.onFailure {
-                                            errorMessage = it.message
-                                        }
-                                    } else {
-                                        // Connect
-                                        val result = uhfManager.initialize(context)
-                                        result.onFailure {
-                                            errorMessage = it.message
-                                        }
-                                    }
-                                }
-                            }
+                            .clickable { onConnectClick() }
                             .padding(horizontal = 16.dp, vertical = 12.dp)
                     ) {
                         Text(
@@ -161,24 +136,7 @@ fun UHFScreen(
                         )
                         .brutalistBorder()
                         .clickable(enabled = isConnected) {
-                            if (isScanning) {
-                                // Stop scanning
-                                scope.launch {
-                                    isScanning = false
-                                    uhfManager.stopInventory()
-                                }
-                            } else {
-                                // Start scanning
-                                scope.launch {
-                                    uhfManager.clearTags()
-                                    isScanning = true
-                                    val result = uhfManager.startInventory()
-                                    result.onFailure {
-                                        errorMessage = it.message
-                                        isScanning = false
-                                    }
-                                }
-                            }
+                            onScanClick(isScanning)
                         }
                         .padding(vertical = 20.dp),
                     contentAlignment = Alignment.Center
@@ -201,7 +159,7 @@ fun UHFScreen(
                         )
                         .brutalistBorder()
                         .clickable(enabled = !isScanning && tags.isNotEmpty()) {
-                            uhfManager.clearTags()
+                            onClearClick()
                         }
                         .padding(vertical = 20.dp),
                     contentAlignment = Alignment.Center
@@ -212,6 +170,23 @@ fun UHFScreen(
                         color = BrutalistColors.Black
                     )
                 }
+            }
+
+            // Open Door Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BrutalistColors.BrightGreen)
+                    .brutalistBorder()
+                    .clickable { onOpenDoorClick() }
+                    .padding(vertical = 20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "ABRIR PUERTA",
+                    style = BrutalistTypography.ButtonLabel,
+                    color = BrutalistColors.Black
+                )
             }
 
             // Tags Counter
@@ -290,34 +265,6 @@ fun UHFScreen(
             onDismiss = { showDialog = false }
         )
     }
-
-    // Error Message
-    errorMessage?.let { error ->
-        LaunchedEffect(error) {
-            kotlinx.coroutines.delay(3000)
-            errorMessage = null
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(BrutalistColors.BrightRed)
-                    .brutalistBorder()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = error.uppercase(),
-                    style = BrutalistTypography.ButtonLabel,
-                    color = BrutalistColors.Black
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -336,57 +283,30 @@ fun BrutalistTagCard(
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // EPC
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "EPC:",
-                    style = BrutalistTypography.NavLabel,
-                    color = BrutalistColors.Black
-                )
-                Text(
-                    text = tag.epc,
-                    style = BrutalistTypography.NavLabel,
-                    color = BrutalistColors.Black
-                )
+                Text(text = "EPC:", style = BrutalistTypography.NavLabel, color = BrutalistColors.Black)
+                Text(text = tag.epc, style = BrutalistTypography.NavLabel, color = BrutalistColors.Black)
             }
 
-            // TID (if available)
             if (tag.tid.isNotEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "TID:",
-                        style = BrutalistTypography.NavLabel,
-                        color = BrutalistColors.Black
-                    )
-                    Text(
-                        text = tag.tid,
-                        style = BrutalistTypography.NavLabel,
-                        color = BrutalistColors.Black
-                    )
+                    Text(text = "TID:", style = BrutalistTypography.NavLabel, color = BrutalistColors.Black)
+                    Text(text = tag.tid, style = BrutalistTypography.NavLabel, color = BrutalistColors.Black)
                 }
             }
 
-            // RSSI and Count
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "RSSI: ${tag.rssi}",
-                    style = BrutalistTypography.NavLabel,
-                    color = BrutalistColors.Black
-                )
-                Text(
-                    text = "×${tag.count}",
-                    style = BrutalistTypography.NavLabel,
-                    color = BrutalistColors.Black
-                )
+                Text(text = "RSSI: ${tag.rssi}", style = BrutalistTypography.NavLabel, color = BrutalistColors.Black)
+                Text(text = "×${tag.count}", style = BrutalistTypography.NavLabel, color = BrutalistColors.Black)
             }
         }
     }
@@ -408,7 +328,6 @@ fun BrutalistTagDetailsDialog(
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Title
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -424,30 +343,13 @@ fun BrutalistTagDetailsDialog(
                     )
                 }
 
-                // Tag Details using BrutalistLabeledTextBox
-                BrutalistLabeledTextBox(
-                    label = "EPC",
-                    text = tag.epc
-                )
-
+                BrutalistLabeledTextBox(label = "EPC", text = tag.epc)
                 if (tag.tid.isNotEmpty()) {
-                    BrutalistLabeledTextBox(
-                        label = "TID",
-                        text = tag.tid
-                    )
+                    BrutalistLabeledTextBox(label = "TID", text = tag.tid)
                 }
+                BrutalistLabeledTextBox(label = "RSSI", text = tag.rssi)
+                BrutalistLabeledTextBox(label = "LECTURAS", text = tag.count.toString())
 
-                BrutalistLabeledTextBox(
-                    label = "RSSI",
-                    text = tag.rssi
-                )
-
-                BrutalistLabeledTextBox(
-                    label = "LECTURAS",
-                    text = tag.count.toString()
-                )
-
-                // Close Button
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -457,13 +359,74 @@ fun BrutalistTagDetailsDialog(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "CERRAR",
-                        style = BrutalistTypography.ButtonLabel,
-                        color = BrutalistColors.White
-                    )
+                    Text(text = "CERRAR", style = BrutalistTypography.ButtonLabel, color = BrutalistColors.White)
                 }
             }
         }
     }
+}
+
+// --- Previews ---
+
+private val sampleTags = listOf(
+    UHFManager.TagInfo(epc = "E2000017211100000000000A", tid = "E2801160600002061234ABCD", rssi = "-65", count = 3),
+    UHFManager.TagInfo(epc = "E2000017211100000000000B", tid = "", rssi = "-72", count = 1),
+    UHFManager.TagInfo(epc = "E2000017211100000000000C", tid = "E2801160600002061234ABCE", rssi = "-58", count = 7),
+)
+
+@Preview(showBackground = true, name = "Screen - Empty / Disconnected")
+@Composable
+private fun UHFScreenEmptyPreview() {
+    UHFScreen(
+        tags = emptyList(),
+        status = "Not initialized",
+        isConnected = false,
+        isScanning = false,
+        onBackClick = {},
+        onConnectClick = {},
+        onScanClick = {},
+        onClearClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Screen - Connected with tags")
+@Composable
+private fun UHFScreenWithTagsPreview() {
+    UHFScreen(
+        tags = sampleTags,
+        status = "Ready",
+        isConnected = true,
+        isScanning = false,
+        onBackClick = {},
+        onConnectClick = {},
+        onScanClick = {},
+        onClearClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Screen - Scanning")
+@Composable
+private fun UHFScreenScanningPreview() {
+    UHFScreen(
+        tags = sampleTags,
+        status = "Scanning...",
+        isConnected = true,
+        isScanning = true,
+        onBackClick = {},
+        onConnectClick = {},
+        onScanClick = {},
+        onClearClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Tag Card")
+@Composable
+private fun BrutalistTagCardPreview() {
+    BrutalistTagCard(tag = sampleTags.first(), onClick = {})
+}
+
+@Preview(showBackground = true, name = "Tag Details Dialog")
+@Composable
+private fun BrutalistTagDetailsDialogPreview() {
+    BrutalistTagDetailsDialog(tag = sampleTags.first(), onDismiss = {})
 }

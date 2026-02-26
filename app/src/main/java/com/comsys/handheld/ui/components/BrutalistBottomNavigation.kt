@@ -3,6 +3,7 @@ package com.comsys.handheld.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -24,6 +24,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import com.comsys.handheld.ui.theme.BrutalistColors
 import com.comsys.handheld.ui.theme.BrutalistTypography
 import com.comsys.handheld.ui.theme.brutalistBorder
@@ -67,13 +71,16 @@ fun BrutalistBottomNavigation(
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
             .background(backgroundColor)
-            .border(
-                width = 4.dp,
-                color = BrutalistColors.Black
-            )
-            .padding(vertical = 2.dp),
+            .drawBehind{
+                drawLine(
+                    color = Color.Black,
+                    start = Offset(0f, 0f),
+                    end = Offset(size.width, 0f),
+                    strokeWidth = 2.dp.toPx()
+                )
+            }
+            .padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -102,114 +109,35 @@ private fun BrutalistNavItem(
     unselectedColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (isSelected) selectedColor else Color.Transparent
-    val contentColor = if (isSelected) BrutalistColors.Black else unselectedColor
+    val iconColor = if (isSelected) selectedColor else BrutalistColors.TextGray
+    val textColor = unselectedColor
 
     Column(
         modifier = modifier
-            .clickable(onClick = onClick)
-            .background(backgroundColor)
-            .brutalistBorder()
-            .padding(horizontal = 20.dp, vertical = 6.dp),
+            .padding(vertical = 6.dp),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = item.icon,
             contentDescription = item.label,
-            modifier = Modifier.size(28.dp),
-            tint = contentColor
+            modifier = Modifier
+                .size(28.dp)
+                .clickable(
+                    onClick = onClick,
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ),  // Clickable only on icon
+            tint = iconColor
         )
 
         Text(
             text = item.label.uppercase(),
             style = BrutalistTypography.NavLabel,
-            color = contentColor,
+            color = if (isSelected) selectedColor else BrutalistColors.TextGray,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 4.dp)
         )
-    }
-}
-
-/**
- * Alternative brutalist bottom navigation with full-width selected indicator
- */
-@Composable
-fun BrutalistBottomNavigationAlt(
-    items: List<BrutalistNavItem>,
-    selectedRoute: String,
-    onItemClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(BrutalistColors.Black)
-    ) {
-        // Top border
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(BrutalistColors.BrightRed)
-                .padding(vertical = 3.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(BrutalistColors.White)
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            items.forEach { item ->
-                BrutalistNavItemAlt(
-                    item = item,
-                    isSelected = item.route == selectedRoute,
-                    onClick = { onItemClick(item.route) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BrutalistNavItemAlt(
-    item: BrutalistNavItem,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .background(
-                if (isSelected) BrutalistColors.BrightRed else Color.Transparent
-            )
-            .border(
-                width = 4.dp,
-                color = BrutalistColors.Black
-            )
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = item.label,
-                modifier = Modifier.size(32.dp),
-                tint = BrutalistColors.Black
-            )
-
-            Text(
-                text = item.label.uppercase(),
-                style = BrutalistTypography.NavLabel,
-                color = BrutalistColors.Black,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
     }
 }
 
@@ -231,11 +159,5 @@ private fun BrutalistBottomNavigationPreview() {
         )
 
         Box(modifier = Modifier.padding(16.dp))
-
-        BrutalistBottomNavigationAlt(
-            items = items,
-            selectedRoute = "star",
-            onItemClick = {}
-        )
     }
 }

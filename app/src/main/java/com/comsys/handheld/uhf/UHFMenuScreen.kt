@@ -2,11 +2,12 @@ package com.comsys.handheld.uhf
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.outlined.DoorSliding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -15,12 +16,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.comsys.handheld.ui.components.BrutalistMenuButton
 import com.comsys.handheld.ui.theme.BrutalistColors
 import com.comsys.handheld.ui.theme.BrutalistTypography
-import com.comsys.handheld.ui.theme.brutalistBorder
 
 /**
  * UHF Menu Screen with options for Access Control and RFID Scanning
@@ -38,14 +39,15 @@ fun UHFMenuScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "UHF READER",
-                        style = BrutalistTypography.Header
+                        text = "UFH READER",
+                        style = BrutalistTypography.Header,
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BrutalistColors.BrightYellow,
+                    containerColor = Color.Transparent,
                     titleContentColor = BrutalistColors.Black
-                )
+                ),
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         }
     ) { paddingValues ->
@@ -55,11 +57,11 @@ fun UHFMenuScreen(
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Access Control Button
             BrutalistMenuButton(
-                icon = Icons.Filled.Person,
+                icon = Icons.Outlined.DoorSliding,
                 title = "ACCESOS",
                 subtitle = "REGISTROS DE ENTRADA Y SALIDA",
                 onClick = onAccessControlClick
@@ -67,7 +69,7 @@ fun UHFMenuScreen(
 
             // RFID Scanning Button
             BrutalistMenuButton(
-                icon = Icons.Filled.Star,
+                icon = Icons.Filled.Sensors,
                 title = "RFID",
                 subtitle = "ESCANEO DE ETIQUETAS UHF",
                 onClick = onRFIDScanClick

@@ -1,10 +1,13 @@
 package com.comsys.handheld.ui.theme
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -21,62 +24,37 @@ fun Modifier.brutalistBorder(
     borderColor: Color = BrutalistColors.Black,
     shadowColor: Color = BrutalistColors.Black,
     borderWidth: Dp = 2.dp,
-    shadowOffset: Dp = 5.dp
-): Modifier = this.drawWithContent {
-    val borderPx = borderWidth.toPx()
-    val offsetPx = shadowOffset.toPx()
+    shadowOffset: Dp = 5.dp,
+    cornerRadius: Dp = 0.dp
+): Modifier = this
+    .clip(RoundedCornerShape(cornerRadius))
+    .drawWithContent {
+        val borderPx = borderWidth.toPx()
+        val offsetPx = shadowOffset.toPx()
+        val radiusPx = cornerRadius.toPx()
+        val corner = CornerRadius(radiusPx, radiusPx)
 
-    // Draw the content first (background + element content)
-    drawContent()
+        drawContent()
 
-    // Draw shadow strips AFTER content (visible on bottom and right)
+        drawRoundRect(
+            color = shadowColor,
+            topLeft = Offset(offsetPx, size.height),
+            size = Size(size.width, offsetPx),
+            cornerRadius = corner
+        )
 
-    // Bottom shadow strip
-    drawRect(
-        color = shadowColor,
-        topLeft = Offset(offsetPx, size.height),
-        size = Size(size.width, offsetPx)
-    )
+        drawRoundRect(
+            color = shadowColor,
+            topLeft = Offset(size.width, offsetPx),
+            size = Size(offsetPx, size.height),
+            cornerRadius = corner
+        )
 
-    // Right shadow strip
-    drawRect(
-        color = shadowColor,
-        topLeft = Offset(size.width, offsetPx),
-        size = Size(offsetPx, size.height)
-    )
-
-    // Draw border on top of everything
-    // Top border
-    drawRect(
-        color = borderColor,
-        topLeft = Offset(0f, 0f),
-        size = Size(size.width, borderPx)
-    )
-    // Left border
-    drawRect(
-        color = borderColor,
-        topLeft = Offset(0f, 0f),
-        size = Size(borderPx, size.height)
-    )
-    // Bottom border
-    drawRect(
-        color = borderColor,
-        topLeft = Offset(0f, size.height - borderPx),
-        size = Size(size.width, borderPx)
-    )
-    // Right border
-    drawRect(
-        color = borderColor,
-        topLeft = Offset(size.width - borderPx, 0f),
-        size = Size(borderPx, size.height)
-    )
-}
-
-/**
- * Uniform brutalist border (all sides same thickness)
- * Use this for elements that don't need the shadow effect
- */
-fun Modifier.brutalistBorderUniform(
-    color: Color = BrutalistColors.Black,
-    width: Dp = 3.dp
-): Modifier = this.border(width = width, color = color)
+        drawRoundRect(
+            color = borderColor,
+            topLeft = Offset(borderPx / 2, borderPx / 2),
+            size = Size(size.width - borderPx, size.height - borderPx),
+            cornerRadius = corner,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = borderPx)
+        )
+    }

@@ -8,9 +8,14 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
@@ -21,6 +26,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
@@ -28,7 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.comsys.handheld.ui.theme.BrutalistColors
 import com.comsys.handheld.ui.theme.BrutalistTypography
-import com.comsys.handheld.ui.theme.brutalistBorder
 
 /**
  * Brutalist menu button component
@@ -63,47 +70,78 @@ fun BrutalistMenuButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .drawBehind {
+                val offsetX = 2.dp.toPx()
+                val offsetY = 2.dp.toPx()
+                val cornerRadius = 16.dp.toPx()
+                
+                drawRoundRect(
+                    color = Color.Black,
+                    topLeft = Offset(offsetX, offsetY),
+                    size = size,
+                    cornerRadius = CornerRadius(cornerRadius)
+                )
+            }
             .background(
-                if (isPressed) pressedBackgroundColor else Color.Transparent
+                if (isPressed) pressedBackgroundColor else Color(0xFFE2E8F0),
+                shape = RoundedCornerShape(16.dp)
             )
-            .brutalistBorder()
+            .border(
+                width = 2.dp,
+                color = Color.Black,
+                shape = RoundedCornerShape(16.dp)
+            )
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             )
             .padding(24.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.CenterStart
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Row(
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Icon
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                modifier = Modifier.size(64.dp),
-                tint = BrutalistColors.Black
-            )
-
-            // Title
-            Text(
-                text = title.uppercase(),
-                style = BrutalistTypography.Header,
-                color = BrutalistColors.Black,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 16.dp)
-            )
-
-            // Subtitle
-            Text(
-                text = subtitle.uppercase(),
-                style = BrutalistTypography.NavLabel,
-                color = BrutalistColors.Black,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp)
-            )
+            Box(
+                modifier = modifier
+                    .background(
+                        color = if (isPressed) BrutalistColors.DarkBlue else BrutalistColors.IconBoxBgGray,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        width = 1.5.dp,
+                        color = if (isPressed) BrutalistColors.BorderBlue else BrutalistColors.BorderGray,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(4.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    modifier = Modifier.size(56.dp),
+                    tint = if (isPressed) Color.White else Color.Black
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = title.uppercase(),
+                    style = BrutalistTypography.Header,
+                    color = if (isPressed) BrutalistColors.White else BrutalistColors.Black,
+                    textAlign = TextAlign.Center,
+                    // modifier = Modifier.padding(top = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle.uppercase(),
+                    style = BrutalistTypography.NavLabel,
+                    color = if (isPressed) BrutalistColors.PressedTextGray else BrutalistColors.TextGray,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }

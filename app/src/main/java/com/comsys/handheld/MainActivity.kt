@@ -125,7 +125,7 @@ fun HandheldApp() {
                         }
 
                         UHFScreen(
-                            tags = tags,
+                            tags = tags.take(1),
                             status = status,
                             isConnected = isConnected,
                             isScanning = isScanning,

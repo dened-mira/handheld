@@ -25,7 +25,7 @@ fun Modifier.brutalistBorder(
     shadowColor: Color = BrutalistColors.Black,
     borderWidth: Dp = 2.dp,
     shadowOffset: Dp = 5.dp,
-    cornerRadius: Dp = 0.dp
+    cornerRadius: Dp = 12.dp
 ): Modifier = this
     .clip(RoundedCornerShape(cornerRadius))
     .drawWithContent {

@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -211,42 +209,51 @@ fun UHFScreen(
                 }
             }
 
-            // Tags List
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .background(BrutalistColors.White)
-                    .brutalistBorder()
-            ) {
-                if (tags.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+            // Tag Display
+            val firstTag = tags.firstOrNull()
+            if (firstTag != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFE2E8F0))
+                        .brutalistBorder()
+                        .clickable {
+                            selectedTag = firstTag
+                            showDialog = true
+                        }
+                        .padding(16.dp)
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "[ NO HAY ETIQUETAS ]",
+                            text = "EPC",
+                            style = BrutalistTypography.NavLabel,
+                            color = BrutalistColors.Black.copy(alpha = 0.6f)
+                        )
+                        Text(
+                            text = firstTag.epc.chunked(4).joinToString(" "),
                             style = BrutalistTypography.Header,
-                            color = BrutalistColors.Black.copy(alpha = 0.3f),
-                            textAlign = TextAlign.Center
+                            color = BrutalistColors.Black
                         )
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(tags, key = { it.epc }) { tag ->
-                            BrutalistTagCard(
-                                tag = tag,
-                                onClick = {
-                                    selectedTag = tag
-                                    showDialog = true
-                                }
-                            )
-                        }
-                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(BrutalistColors.White)
+                        .brutalistBorder(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "[ NO HAY ETIQUETAS ]",
+                        style = BrutalistTypography.Header,
+                        color = BrutalistColors.Black.copy(alpha = 0.3f),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

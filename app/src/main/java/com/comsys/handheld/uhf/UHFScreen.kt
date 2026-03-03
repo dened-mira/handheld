@@ -124,7 +124,6 @@ fun UHFScreen(
                 }
             }
 
-            // Control Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -133,6 +132,7 @@ fun UHFScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(
                             if (isScanning) BrutalistColors.BrightRed
                             else if (isConnected) BrutalistColors.BrightYellow
@@ -151,6 +151,13 @@ fun UHFScreen(
                         color = BrutalistColors.Black
                     )
                 }
+            }
+
+            // Control Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
 
                 // Clear Button
                 Box(
